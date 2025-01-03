@@ -138,18 +138,15 @@ def rcsj(current, damping, prefix=[], fft=False,svpng=False,svvolt=False,saveplo
             #savedata((k,len(current)),prefix,idstring,timedata,ivdata)
             
             data2save = {'Time (wp*t)' : t, 'Phase (rad)' : y[:,0], 'AC Voltage (V)' : y[:,1]}
-            data2save = stlab.stlabdict(data2save)
-            data2save.addparcolumn('Current (Ic)',i,last=False)
-            data2save.addparcolumn('DC Voltage (V)',mean)
-            data2save.addparcolumn('{} ()'.format(damping[0]),damping[1])
+            data2save['Current (Ic)'] = i
+            data2save['DC Voltage (V)'] = mean
+            data2save['{} ()'.format(damping[0])] = damping[1]
             if k == 0:
                 idstring = '{}={:2.2f}'.format(damping[0],damping[1])
                 ensure_dir(prefix)
-                myfile = stlab.newfile(prefix,idstring,data2save.keys(),
-                usedate=False,usefolder=False)#,mypath='simresults/')
-            stlab.savedict(myfile,data2save)
-            if k == len(current):
-                myfile.close()
+                myfile = os.path.join(prefix, idstring + '.csv')
+            save_dict_to_csv(myfile, data2save)
+            
                 
                
         if svvolt:

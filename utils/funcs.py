@@ -1,4 +1,3 @@
-import stlab
 from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +6,7 @@ import os
 from scipy.signal import argrelextrema
 from scipy.fftpack import fft, fftfreq
 import pickle
-
+import csv
 
 def ensure_dir(file_path):
     '''
@@ -118,17 +117,12 @@ def savedata(data2save,filename,path='../simresults/'):
     np.savetxt(path+filename,data2save)
 
 
-def savestlab(data2save,filename,path='../simresults/'):
-    '''
-    data2save = {'Time (wp*t)' : t, 'Phase (rad)' : y[:,0], 'AC Voltage (V)' : y[:,1]}
-    '''
-    data2save = stlab.stlabdict(data2save)
-    prefix = path
-    idstring = filename
-    myfile = stlab.newfile(prefix,idstring,data2save.keys(),
-    usedate=False,usefolder=False)#,mypath='simresults/')
-    stlab.savedict(myfile,data2save)
-    myfile.close()
+def save_dict_to_csv(file, data_dict):
+    with open(file, mode='a', newline='') as f:
+        writer = csv.writer(f)
+        if f.tell() == 0:
+            writer.writerow(data_dict.keys())
+        writer.writerow(data_dict.values())
 
 
 def saveivplot(current,voltage,damping,normalized=False,single=False):
@@ -165,14 +159,12 @@ def saveiv(current,voltage,damping,normalized):
     '''
     if normalized:
         voltage = voltage/damping[1]
-    data2save = stlab.stlabdict({'Current (Ic)': current, 'Voltage (V)': voltage})
-    data2save.addparcolumn('{} ():'.format(damping[0]),damping[1])
+    data2save = {'Current (Ic)': current, 'Voltage (V)': voltage}
+    data2save['{} ():'.format(damping[0])] = damping[1]
     idstring = '{}={:08.4f}'.format(damping[0],damping[1])
-    myfile = stlab.newfile('../simresults/ivcs/iv',idstring,data2save.keys(),
-        usedate=False,usefolder=False)
-    stlab.savedict(myfile,data2save)
-    myfile.close()    
-    
+    file_path = os.path.join('../simresults/ivcs/', 'iv_' + idstring + '.csv')
+    save_dict_to_csv(file_path, data2save)
+
 
 def savepickle(data,filepath):
     '''
